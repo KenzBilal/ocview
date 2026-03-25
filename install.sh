@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REPO_URL="https://github.com/anomalyco/ocview"
+REPO_URL="https://github.com/KenzBilal/ocview"
 INSTALL_DIR="$HOME/.local/share/ocview"
 BIN_DIR="$HOME/.local/bin"
 CONFIG_DIR="$HOME/.config/ocview"

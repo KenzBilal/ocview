@@ -9,7 +9,7 @@ STATE_FILE = CONFIG_DIR / "state.json"
 DEFAULT_URL = "about:blank"
 APP_NAME = "ocview"
 VERSION = "0.1.0"
-GITHUB_URL = "https://github.com/anomalyco/ocview"
+GITHUB_URL = "https://github.com/KenzBilal/ocview"
 INSTALL_DIR = os.path.expanduser("~/.local/share/ocview")
 
 

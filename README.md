@@ -52,13 +52,13 @@ ocview eliminates this entirely. It's a native Linux WebView panel that sits per
 ## 🚀 Install
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/anomalyco/ocview/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/KenzBilal/ocview/main/install.sh | bash
 ```
 
 Or clone manually:
 
 ```bash
-git clone https://github.com/anomalyco/ocview ~/.local/share/ocview
+git clone https://github.com/KenzBilal/ocview ~/.local/share/ocview
 cd ~/.local/share/ocview
 chmod +x install.sh && ./install.sh
 ```
