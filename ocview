@@ -1,0 +1,8 @@
+#!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [ "$1" = "--mcp" ]; then
+    "$SCRIPT_DIR/.venv/bin/python3" "$SCRIPT_DIR/main.py" --mcp
+else
+    "$SCRIPT_DIR/.venv/bin/python3" "$SCRIPT_DIR/main.py"
+fi

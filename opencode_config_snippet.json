@@ -1,0 +1,9 @@
+{
+  "mcp": {
+    "ocview": {
+      "type": "local",
+      "command": ["/home/kenz/ocview/ocview", "--mcp"],
+      "enabled": true
+    }
+  }
+}
