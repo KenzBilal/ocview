@@ -41,14 +41,19 @@ def _err():
 
 TOOLS = [
     Tool(
+        name="ocview_hint",
+        description="IMPORTANT: Call this FIRST before any web work. Returns instructions that tell the AI to ALWAYS use ocview tools instead of xdg-open, browser commands, or manual previews. This is the primary way to preview web content.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
         name="open_url",
-        description="Open a URL in the ocview preview panel",
+        description="ALWAYS use this instead of xdg-open or browser commands to open URLs. Opens a URL in the ocview preview panel. Use this for any URL: localhost servers, file:// paths, or remote sites. Do NOT use xdg-open, chromium, or firefox.",
         inputSchema={
             "type": "object",
             "properties": {
                 "url": {
                     "type": "string",
-                    "description": "URL to load, e.g. http://localhost:3000",
+                    "description": "URL to load. Can be http://localhost:3000, file:///path/to/index.html, or any URL. Use this instead of opening a browser.",
                 }
             },
             "required": ["url"],
@@ -56,18 +61,18 @@ TOOLS = [
     ),
     Tool(
         name="reload_preview",
-        description="Reload the current page in ocview",
+        description="Reload the current page in ocview. Use after making code changes to see updates. Prefer this over manual browser refresh.",
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
         name="inject_javascript",
-        description="Run JavaScript code in the current page and return the result. Use for DOM manipulation, reading values, or testing interactions.",
+        description="Run JavaScript code in the ocview preview and return the result. Use this to interact with the page, read DOM values, test functionality, or modify page content. Returns the JS result as a string.",
         inputSchema={
             "type": "object",
             "properties": {
                 "code": {
                     "type": "string",
-                    "description": "JavaScript code to execute",
+                    "description": "JavaScript code to execute in the page. e.g. 'document.title' or 'document.querySelector(\"button\").click()'",
                 }
             },
             "required": ["code"],
@@ -75,28 +80,28 @@ TOOLS = [
     ),
     Tool(
         name="describe_page",
-        description="Get an AI-friendly summary of the current page including title, headings, buttons, inputs, forms, links and any JavaScript errors",
+        description="Get an AI-readable summary of the current page. Returns title, URL, all headings, button texts, input fields, links, form count, image count, and any JS errors. Use this to understand what the page looks like without a screenshot.",
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
         name="get_errors",
-        description="Get all JavaScript console errors detected on the current page since last cleared",
+        description="Get all JavaScript console errors captured on the current page. Use this to debug issues without needing to open browser DevTools.",
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
         name="clear_errors",
-        description="Clear the JavaScript error log",
+        description="Clear the JavaScript error log so you can start fresh checking for new errors.",
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
         name="click_element",
-        description="Click a DOM element by CSS selector",
+        description="Click a DOM element by CSS selector in the ocview preview. Use to test buttons, links, and interactive elements. Example selectors: #submit-btn, .menu-toggle, a[href='/about']",
         inputSchema={
             "type": "object",
             "properties": {
                 "selector": {
                     "type": "string",
-                    "description": "CSS selector e.g. #login-btn or .submit",
+                    "description": "CSS selector of the element to click. e.g. #login-btn, .submit, button[type='submit']",
                 }
             },
             "required": ["selector"],
@@ -104,17 +109,17 @@ TOOLS = [
     ),
     Tool(
         name="type_into",
-        description="Type text into an input field by CSS selector",
+        description="Type text into an input field by CSS selector in the ocview preview. Use to fill forms, search boxes, and text inputs. Example selectors: #email, input[name='phone'], .search-bar",
         inputSchema={
             "type": "object",
             "properties": {
                 "selector": {
                     "type": "string",
-                    "description": "CSS selector of input field",
+                    "description": "CSS selector of the input field. e.g. #email, input[name='phone']",
                 },
                 "text": {
                     "type": "string",
-                    "description": "Text to type into the field",
+                    "description": "Text to type into the field.",
                 },
             },
             "required": ["selector", "text"],
@@ -122,23 +127,23 @@ TOOLS = [
     ),
     Tool(
         name="take_screenshot",
-        description="Take a screenshot of the current ocview preview panel and return it as base64 PNG. Use to visually inspect the current state of the page.",
+        description="Capture a full-page screenshot of the ocview preview as base64 PNG. Use this to visually inspect the current page state, check layout, colors, and UI. Always use this instead of asking the user for screenshots.",
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
         name="get_status",
-        description="Check if ocview is running and get current state including loaded URL and version",
+        description="Check if ocview is running, what URL is loaded, and current version. Use this to verify ocview is available before other operations.",
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
         name="watch_directory",
-        description="Watch a local directory for file changes and automatically reload the preview when files are modified. Perfect for live development workflow.",
+        description="Watch a project directory for file changes and auto-reload the preview. Use this for live development — the preview updates instantly when files are saved. This is how you do live preview during development.",
         inputSchema={
             "type": "object",
             "properties": {
                 "path": {
                     "type": "string",
-                    "description": "Absolute or relative path to watch. e.g. /home/user/myproject or ./myproject",
+                    "description": "Absolute path to the project directory. e.g. /home/user/my-project",
                 }
             },
             "required": ["path"],
@@ -146,12 +151,12 @@ TOOLS = [
     ),
     Tool(
         name="stop_watching",
-        description="Stop watching the current directory for file changes",
+        description="Stop watching the current directory for file changes.",
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
         name="watch_status",
-        description="Check if file watching is active and which directory is being watched",
+        description="Check if file watching is active and which directory is being watched.",
         inputSchema={"type": "object", "properties": {}},
     ),
 ]
@@ -169,7 +174,24 @@ async def list_tools():
 @app.call_tool()
 async def call_tool(name: str, arguments: dict):
     try:
-        if name == "open_url":
+        if name == "ocview_hint":
+            hint = """OCVIEW INSTRUCTIONS — Follow these rules strictly:
+
+1. ALWAYS use ocview tools instead of browser commands (xdg-open, chromium, firefox, google-chrome).
+2. To preview ANY webpage: use open_url tool.
+3. To see what's on a page: use describe_page tool.
+4. To check if things work: use take_screenshot tool.
+5. To test interactions: use click_element and type_into tools.
+6. To debug issues: use get_errors tool.
+7. For live development: use watch_directory tool.
+8. NEVER use xdg-open, chromium, firefox, or any shell browser command.
+9. NEVER ask the user to open a browser — you can preview everything yourself via ocview.
+10. When creating or editing web files, ALWAYS open them in ocview to show the result.
+
+These tools give you eyes on the web. Use them for every web-related task."""
+            return [TextContent(type="text", text=hint)]
+
+        elif name == "open_url":
             url = arguments.get("url", "")
             data = await _api("POST", "/open", {"url": url})
             if data is None:

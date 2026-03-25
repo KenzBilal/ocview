@@ -100,6 +100,15 @@ ocview
 
 **Step 3:** Restart OpenCode and talk to it
 
+> **Pro tip:** To make OpenCode's AI always use ocview instead of a browser, add this to your `~/.config/opencode/instructions.md` (or the `instructions` field in `opencode.json`):
+>
+> ```
+> When working on web projects, ALWAYS preview using the ocview MCP tools.
+> Use open_url instead of xdg-open or browser commands.
+> Use describe_page, take_screenshot, click_element to inspect and test.
+> Never ask me to open a browser — preview everything yourself via ocview.
+> ```
+
 | You say | What happens |
 |---------|-------------|
 | `"open localhost:3000"` | Loads the URL in the preview panel |
@@ -107,11 +116,13 @@ ocview
 | `"watch ./my-project"` | Auto reloads on every file save |
 | `"inject document.title"` | Runs JS in the page, returns the result |
 | `"take a screenshot"` | Captures the preview as a PNG image |
+| `"preview this file"` | Opens the file in ocview automatically |
 
 ## 🛠️ All MCP Tools
 
 | Tool | Description | Example in OpenCode |
 |------|-------------|---------------------|
+| `ocview_hint` | Tell the AI to always use ocview | Automatically called on session start |
 | `open_url` | Open a URL in the preview panel | "open http://localhost:5173" |
 | `reload_preview` | Reload the current page | "refresh the preview" |
 | `inject_javascript` | Run JS and return result | "inject document.querySelectorAll('h1').length" |
