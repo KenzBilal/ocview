@@ -94,8 +94,63 @@ def run_gtk_window():
     Gtk.main()
 
 
+def _is_api_running(port):
+    """Check if the ocview API is responding on the given port."""
+    import socket
+    try:
+        with socket.create_connection(("127.0.0.1", port), timeout=1):
+            return True
+    except (ConnectionRefusedError, socket.timeout, OSError):
+        return False
+
+
+def _launch_window_process():
+    """Spawn the GTK window as a detached background process."""
+    import os
+    import subprocess
+    import sys
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    python = os.path.join(script_dir, ".venv", "bin", "python3")
+    if not os.path.isfile(python):
+        python = sys.executable
+    subprocess.Popen(
+        [python, os.path.join(script_dir, "main.py")],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+
+
+def _wait_for_api(port, timeout=15):
+    """Wait until the API responds or timeout."""
+    import time
+    import socket
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=1):
+                return True
+        except (ConnectionRefusedError, socket.timeout, OSError):
+            time.sleep(0.5)
+    return False
+
+
 def run_mcp_server():
-    """Launch MCP server only (stdio mode for OpenCode)."""
+    """Launch MCP server. Auto-starts the GTK window if not already running."""
+    import sys
+    from config.settings import PORT
+
+    # Check if the window is already running
+    if not _is_api_running(PORT):
+        print("ocview window not running — launching automatically...", file=sys.stderr)
+        _launch_window_process()
+        if not _wait_for_api(PORT, timeout=15):
+            print("ocview: failed to start window. Check DISPLAY is set.", file=sys.stderr)
+            sys.exit(1)
+        print("ocview window started.", file=sys.stderr)
+    else:
+        print("ocview window already running.", file=sys.stderr)
+
     from ocview_mcp import run_mcp_server as _run
     asyncio.run(_run())
 
